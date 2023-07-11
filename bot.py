@@ -80,7 +80,7 @@ async def process_name(message: types.Message, state: FSMContext):
 #print('OUTPUUUT\n',predict(name,today))
 
 
-@dp.message_handler(commands=['прогноз'],state=Form.predict)
+@dp.message_handler(content_types=['text'],state=Form.predict)
 async def predict_handler(message: types.Message,state: FSMContext):
     async with state.proxy() as data:
         prediction=predict(data['name'],date.today())
