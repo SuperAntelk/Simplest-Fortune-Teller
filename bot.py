@@ -8,7 +8,8 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
 from aiogram.dispatcher.filters.state import State, StatesGroup
-from aiogram.types import ParseMode, InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.types import ParseMode, InlineKeyboardButton, InlineKeyboardMarkup, \
+    ReplyKeyboardRemove, ReplyKeyboardMarkup, KeyboardButton
 from config import TOKEN
 from services.predictor import PredictorService
 
@@ -43,7 +44,7 @@ async def start_handler(message: types.Message):
 
     await Form.name.set()
     ans_text=md.text('/help')
-    await message.answer(f"Привет! Для прогноза, напиши своё ФИО")
+    await message.answer(f"Привет! Для прогноза, напиши своё ФИО",reply_markup=ReplyKeyboardRemove())
 
 
 # You can use state='*' if you want to handle all states
@@ -60,7 +61,7 @@ async def cancel_handler(message: types.Message, state: FSMContext):
     await state.finish()
     await message.reply('Cancelled.')
 
-@dp.message_handler(state=Form.name)
+@dp.message_handler(content_types=['text'],state=Form.name)
 async def process_name(message: types.Message, state: FSMContext):
     """Process user name"""
 
@@ -68,8 +69,12 @@ async def process_name(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['name'] = message.text
         #btn
-        button_predict_today = InlineKeyboardButton('Прогноз на сегодня',callback_data='btn_predict_today')
-        predict_kb=InlineKeyboardMarkup()
+        button_il_predict_today = InlineKeyboardButton('Прогноз на сегодня',callback_data='btn_predict_today')
+        predict_il_kb=InlineKeyboardMarkup()
+        predict_il_kb.add(button_il_predict_today)
+
+        button_predict_today=KeyboardButton('Прогноз на сегодня')
+        predict_kb=ReplyKeyboardMarkup(resize_keyboard=True)
         predict_kb.add(button_predict_today)
 
 
