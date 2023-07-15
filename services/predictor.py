@@ -23,7 +23,7 @@ DAY_LIST = ['первое', 'второе', 'третье', 'четвёртое'
 MONTH_LIST = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
            'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря']
 
-
+TIME_PERIODS = ['утро','день','вечер']
 
 
 @dataclass
@@ -55,9 +55,11 @@ class PredictorService:
                 new_code[ch]=1 
     
         return self.delete_odds(new_code)
+    
     def delete_odds(self,code):
         new_code={k:v for k,v in code.items() if v%2!=0}
         return new_code
+    
     def predict(self,name,date):
         output=Day_predicition()
         name=name.lower()
