@@ -47,14 +47,19 @@ async def start_handler(message: types.Message):
 
     await Form.name.set()
     ans_text = md.text('/help')
+    
     await message.answer(f"Привет! Для прогноза, напиши своё ФИО", reply_markup=ReplyKeyboardRemove())
 
 
 @dp.message_handler(state='*', commands=['help'])
 async def help_handler(message: types.Message):
-    await message.answer(md.link('Как работает простое предсказание из дества','https://telegra.ph/Kak-rabotaet-predskazanie-iz-detstva-07-14'),parse_mode="MarkdownV2")
+    await message.answer(md.link('Как работает простое предсказание из дества', 'https://telegra.ph/Kak-rabotaet-predskazanie-iz-detstva-07-14'), parse_mode="MarkdownV2")
     await message.answer(HELP_RESPONSE, parse_mode="MarkdownV2")
 
+@dp.message_handler(state='*', commands=['name'])
+async def name_changer(message: types.Message):
+    await message.answer("Введи новое имя")
+    await Form.name.set()
 
 @dp.message_handler(state='*', commands=['cancel'])
 async def cancel_handler(message: types.Message, state: FSMContext):
