@@ -30,7 +30,7 @@ bot = Bot(token=TOKEN)
 
 storage = MemoryStorage()
 dp = Dispatcher(bot=bot, storage=storage)
-predict = PredictorService().predict
+get_predict = PredictorService().predict
 
 
 class Form(StatesGroup):
@@ -102,7 +102,7 @@ async def process_name(message: types.Message, state: FSMContext):
 @dp.message_handler(content_types=['text'], state=Form.predict)
 async def predict_handler(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
-        prediction = predict(data['name'], date.today())
+        prediction = get_predict(data['name'], date.today())
         data['predict'] = prediction
         await message.answer(
             md.text(prediction.name,
@@ -117,7 +117,7 @@ async def predict_handler(message: types.Message, state: FSMContext):
 @dp.callback_query_handler(lambda c: c.data == 'btn_predict_today', state=Form.predict)
 async def process_callback_predict(callback_query: types.CallbackQuery, state: FSMContext):
     async with state.proxy() as data:
-        prediction = predict(data['name'], date.today())
+        prediction = get_predict(data['name'], date.today())
         data['predict'] = prediction
         await bot.answer_callback_query(callback_query.id)
         await bot.send_message(callback_query.from_user.id,
