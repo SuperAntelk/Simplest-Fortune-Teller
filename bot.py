@@ -62,7 +62,7 @@ async def help_handler(message: types.Message):
 
 @dp.message_handler(state='*', commands=['name'])
 async def name_changer(message: types.Message):
-    await message.answer("Введи новое имя")
+    await message.answer("Введи новое имя",reply_markup=ReplyKeyboardRemove())
     await Form.name.set()
 
 @dp.message_handler(state='*', commands=['cancel'])
