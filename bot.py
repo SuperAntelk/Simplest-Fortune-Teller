@@ -1,10 +1,10 @@
 from datetime import date
 
-
+#redis version
 import logging
 import aiogram.utils.markdown as md
 from aiogram import Bot, Dispatcher, executor, types
-from aiogram.contrib.fsm_storage.memory import MemoryStorage
+from aiogram.contrib.fsm_storage.redis import RedisStorage2
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
 from aiogram.dispatcher.filters.state import State, StatesGroup
@@ -28,7 +28,11 @@ from messages import HELP_RESPONSE
 
 bot = Bot(token=TOKEN)
 
-storage = MemoryStorage()
+redis_host = "localhost"
+redis_port = 6379
+
+
+storage = RedisStorage2(host=redis_host, port=redis_port)
 dp = Dispatcher(bot=bot, storage=storage)
 get_predict = PredictorService().predict
 
@@ -103,7 +107,7 @@ async def process_name(message: types.Message, state: FSMContext):
 async def predict_handler(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         prediction = get_predict(data['name'], date.today())
-        data['predict'] = prediction
+        #data['predict'] = prediction
         await message.answer(
             md.text(prediction.name,
                     prediction.date,
@@ -118,7 +122,7 @@ async def predict_handler(message: types.Message, state: FSMContext):
 async def process_callback_predict(callback_query: types.CallbackQuery, state: FSMContext):
     async with state.proxy() as data:
         prediction = get_predict(data['name'], date.today())
-        data['predict'] = prediction
+        #data['predict'] = prediction
         await bot.answer_callback_query(callback_query.id)
         await bot.send_message(callback_query.from_user.id,
                                md.text(prediction.name,
