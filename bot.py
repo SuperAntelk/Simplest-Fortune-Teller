@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date,timedelta
 
 #redis version
 import logging
@@ -58,7 +58,7 @@ async def start_handler(message: types.Message):
 @dp.message_handler(state='*', commands=['help'])
 async def help_handler(message: types.Message):
     await message.answer(md.link('Как работает простое предсказание из дества', 'https://telegra.ph/Kak-rabotaet-predskazanie-iz-detstva-07-14'), parse_mode="MarkdownV2")
-    await message.answer(HELP_RESPONSE, parse_mode="MarkdownV2")
+    #await message.answer(HELP_RESPONSE, parse_mode="MarkdownV2")
 
 @dp.message_handler(state='*', commands=['name'])
 async def name_changer(message: types.Message):
@@ -78,6 +78,14 @@ async def cancel_handler(message: types.Message, state: FSMContext):
     await state.finish()
     await message.reply('Cancelled.', reply_markup=ReplyKeyboardRemove())
 
+BUTTONS={'Прогноз на сегодня': date.today,
+        'Прогноз на завтра': lambda: date.today() + timedelta(days=1)}
+
+
+predict_kb = ReplyKeyboardMarkup(resize_keyboard=True)
+for btn in BUTTONS.keys():            
+    button = KeyboardButton(btn)
+    predict_kb.add(button)
 
 @dp.message_handler(content_types=['text'], state=Form.name)
 async def process_name(message: types.Message, state: FSMContext):
@@ -87,14 +95,13 @@ async def process_name(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['name'] = message.text
         # btn
-        button_il_predict_today = InlineKeyboardButton(
-            'Прогноз на сегодня', callback_data='btn_predict_today')
-        predict_il_kb = InlineKeyboardMarkup()
-        predict_il_kb.add(button_il_predict_today)
-
-        button_predict_today = KeyboardButton('Прогноз на сегодня')
-        predict_kb = ReplyKeyboardMarkup(resize_keyboard=True)
-        predict_kb.add(button_predict_today)
+        # button_il_predict_today = InlineKeyboardButton(
+        #     'Прогноз на сегодня', callback_data='btn_predict_today')
+        # predict_il_kb = InlineKeyboardMarkup()
+        # predict_il_kb.add(button_il_predict_today)
+        
+        
+        
 
         await message.reply(md.text(f"Отлично, {data['name']}!\nТеперь ты можешь получить получить прогноз на сегодня "), reply_markup=predict_kb)
     await Form.next()
@@ -106,16 +113,20 @@ async def process_name(message: types.Message, state: FSMContext):
 @dp.message_handler(content_types=['text'], state=Form.predict)
 async def predict_handler(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
-        prediction = get_predict(data['name'], date.today())
+        try:
+            prediction = get_predict(data['name'], BUTTONS[message.text]())
+        except KeyError:
+            await message.answer('Что-то пошло не так, попробуй ещё раз', reply_markup=predict_kb)
         #data['predict'] = prediction
-        await message.answer(
-            md.text(prediction.name,
-                    prediction.date,
-                    prediction.code,
-                    *[f'\n{k.capitalize()}\n{v.key}\n{v.key_len}\n{v.predict}'for k,
-                      v in prediction.predictions.items()],
-                    sep='\n')
-        )
+        else:
+            await message.answer(
+                md.text(prediction.name,
+                        prediction.date,
+                        prediction.code,
+                        *[f'\n{k.capitalize()}\n{v.key}\n{v.key_len}\n{v.predict}'for k,
+                            v in prediction.predictions.items()],
+                        sep='\n')
+            )
 
 
 @dp.callback_query_handler(lambda c: c.data == 'btn_predict_today', state=Form.predict)
