@@ -27,20 +27,25 @@ TIME_PERIODS = ['утро','день','вечер']
 
 
 @dataclass
-class Time_prediction:
+class TimeOfTheDayPrediction:
     predict:dict
     key_len:int
     key:str
 
 @dataclass
-class Day_predicition:
+class DayPredicition:
     name:str
     date:str
     code:str
     keys:list[str]
-    predictions:dict[str,Time_prediction]
+    predictions:dict[str,TimeOfTheDayPrediction]
     def __init__(self):
         pass
+    def as_list(self):
+        return [self.name,
+                self.date,
+                str(self.code),
+                *[f'\n{k.capitalize()}\n{v.key}\n{v.key_len}\n{v.predict}'for k, v in self.predictions.items()]]
 
 class PredictorService:
     def date_to_words(self,date):    
@@ -61,7 +66,7 @@ class PredictorService:
         return new_code
     
     def predict(self,name,date):
-        output=Day_predicition()
+        output=DayPredicition()
         name=name.lower()
         print(name)
         output.name=name
@@ -82,11 +87,13 @@ class PredictorService:
         predictions={}
         for time_code in 'утро','день','вечер':
             print(time_code)
-            print(predict:=self.predict_for_time(time_code,code))
-            print(key_len:=len(predict))
+            predict=self.predict_for_time(time_code,code)
+            print(predict)
+            key_len=len(predict)
+            print(key_len)
             
             print(KEYS[key_len%6])
-            predictions[time_code]=Time_prediction(**{'predict':predict,'key_len':key_len,'key':KEYS[key_len%6]})
+            predictions[time_code]=TimeOfTheDayPrediction(**{'predict':predict,'key_len':key_len,'key':KEYS[key_len%6]})
         output.predictions=predictions
         #return name,date,code,code.keys(),predictions
         return output
